@@ -6,10 +6,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+//George Hidalgo & Anna Spreitzer
 public class transactionex {
 	
 	public static void main(String args[]) throws SQLException, IOException, ClassNotFoundException {
-
+		
+		//connect to db
 		Class.forName("org.postgresql.Driver");
 		Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres","postgres","6855dua11y");
 
@@ -22,73 +24,41 @@ public class transactionex {
 			System.out.println("Connection Failed");
 		}
 		
-		conn.setAutoCommit(false);
-		conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); 
+		conn.setAutoCommit(false); //For atomicicty
+		conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); //for isolation
 		
 		Statement stmt = null;
 		
+		//delete from stock
 		try {stmt = conn.createStatement();
-		String instring = "DELETE FROM depot where dep_id = 'd4'";
+		stmt.execute("DELETE FROM Stock where dep_id = 'd1'");
+		System.out.println("success deleting from stock");
+		conn.commit();
+		stmt.close();
+		}catch (SQLException e)	{
+			System.out.println(e);
+			conn.rollback();
+			stmt.close();
+			conn.close();
+			return;
+		}
+		
+		//delete from depot
+		try {stmt = conn.createStatement();
+		String instring = "DELETE FROM depot where dep_id = 'd1'";
 		stmt.executeUpdate(instring);
 		conn.commit();
 		stmt.close();
-
+		System.out.println("success deleting from depot");
 		} catch (SQLException e) {
 			System.out.println("catch Exception");
 			// For atomicity
 			conn.rollback();
 			stmt.close();
 			return;
-		} // main
-		//conn.commit();
-		//stmt.close();
+		} 
 		conn.close();
 	}
 }
 
-
-/*	public static void main(String[] args) {
-
-		Connection conn = null;
-		Statement stmt = null;
 		
-	try
-	{
-		Class.forName("org.postgresql.Driver");
-		conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres","postgres","6855dua11y");
-
-		conn.setAutoCommit(false);
-		conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
-
-		if (conn != null)
-		{
-			System.out.println("Connection OK");
-		}
-		else
-		{
-			System.out.println("Connection Failed");
-		}
-		
-		stmt = conn.createStatement();
-		String instring = "DELETE FROM Depot where dep_id = 'd4'";
-		stmt.executeUpdate(instring);
-		stmt.close();
-		
-		
-		
-		
-		conn.commit();
-		conn.close();
-	}
-	catch (SQLException | ClassNotFoundException e)
-	{
-		System.out.println(e);
-		conn.rollback();
-		conn.commit();
-		conn.close();
-		return;
-	}
-
-	}
-}*/
